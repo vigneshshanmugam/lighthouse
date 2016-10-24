@@ -490,7 +490,7 @@ class Driver {
   }
 
   beginEmulation(flags) {
-    let emulations = [];
+    const emulations = [];
 
     if (!flags.disableDeviceEmulation) {
       emulations.push(emulation.enableNexus5X(this));
@@ -523,7 +523,7 @@ class Driver {
    */
   goOnline(options) {
     return this.sendCommand('Network.enable').then(_ => {
-      if (options.flags.mobile) {
+      if (!options.flags.disableNetworkThrottling) {
         return emulation.enableNetworkThrottling(this);
       }
 

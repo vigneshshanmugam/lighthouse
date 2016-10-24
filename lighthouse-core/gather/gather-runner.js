@@ -85,9 +85,8 @@ class GatherRunner {
 
   static setupDriver(driver, options) {
     log.log('status', 'Initializing…');
-    // Enable emulation
-    // Will check what emulation needs to be done based on flags
-    return Promise.resolve(driver.beginEmulation(options.flags))
+    // Enable emulation based on flags
+    return driver.beginEmulation(options.flags)
       .then(_ => {
         return driver.cleanAndDisableBrowserCaches();
       }).then(_ => {
