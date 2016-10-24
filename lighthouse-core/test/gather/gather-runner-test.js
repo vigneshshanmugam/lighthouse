@@ -47,28 +47,33 @@ class TestGathererNoArtifact {
 
 const fakeDriver = require('./fake-driver');
 
-function getMockedEmulationDriver(deviceEmulation, networkThrottle, cpuThrottle) {
+function getMockedEmulationDriver(emulationFn, netThrottleFn, cpuThrottleFn) {
   const Driver = require('../../gather/drivers/cri');
   const EmulationMock = class extends Driver {
     beginEmulation(flags) {
-      super.beginEmulation(flags);
+      return super.beginEmulation(flags);
     }
     sendCommand(command) {
+      let fn = null;
       switch (command) {
         case 'Network.emulateNetworkConditions':
-          return Promise.resolve(networkThrottle && networkThrottle());
+          fn = netThrottleFn;
+          break;
         case 'Emulation.setCPUThrottlingRate':
-          return Promise.resolve(cpuThrottle && cpuThrottle());
+          fn = cpuThrottleFn;
+          break;
         case 'Emulation.setDeviceMetricsOverride':
-          return Promise.resolve(deviceEmulation && deviceEmulation());
+          fn = emulationFn;
+          break;
         default:
-          return Promise.reject('method not found');
+          fn = null;
+          break;
       }
+      return Promise.resolve(fn && fn());
     }
     cleanAndDisableBrowserCaches() {}
     clearDataForOrigin() {}
   };
-
   return new EmulationMock();
 }
 
@@ -140,7 +145,6 @@ describe('GatherRunner', function() {
 
       return true;
     };
-
     const driver = getMockedEmulationDriver(
       createEmulationCheck('calledDeviceEmulation', false),
       createEmulationCheck('calledNetworkEmulation', true),
@@ -170,7 +174,6 @@ describe('GatherRunner', function() {
 
       return true;
     };
-
     const driver = getMockedEmulationDriver(
       createEmulationCheck('calledDeviceEmulation'),
       createEmulationCheck('calledNetworkEmulation'),
@@ -200,7 +203,6 @@ describe('GatherRunner', function() {
 
       return true;
     };
-
     const driver = getMockedEmulationDriver(
       createEmulationCheck('calledDeviceEmulation'),
       createEmulationCheck('calledNetworkEmulation'),

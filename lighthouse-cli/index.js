@@ -85,6 +85,9 @@ Example: --output-path=./lighthouse-results.html`
 
   // boolean values
   .boolean([
+    'disable-device-emulation',
+    'disable-cpu-throttling',
+    'disable-network-throttling',
     'save-assets',
     'save-artifacts',
     'list-all-audits',
@@ -101,7 +104,7 @@ Example: --output-path=./lighthouse-results.html`
   .choices('output', Object.keys(Printer.OUTPUT_MODE))
 
   // default values
-  .default('mobile', true)
+  .default('disable-cpu-throttling', true)
   .default('output', Printer.OUTPUT_MODE.pretty)
   .default('output-path', 'stdout')
   .check(argv => {
