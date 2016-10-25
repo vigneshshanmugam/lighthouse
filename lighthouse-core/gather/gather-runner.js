@@ -204,6 +204,10 @@ class GatherRunner {
       return Promise.reject(new Error('You must provide a config'));
     }
 
+    if (typeof options.flags.disableCpuThrottling === 'undefined') {
+      options.flags.disableCpuThrottling = true;
+    }
+
     passes = this.instantiateGatherers(passes, options.config.configDir);
 
     return driver.connect()
