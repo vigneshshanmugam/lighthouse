@@ -39,12 +39,27 @@ lighthouse --help
 git clone https://github.com/GoogleChrome/lighthouse
 cd lighthouse
 npm install
+
+cd lighthouse-cli/
+npm install
 ```
 
+#### Working on the CLI.
+
+The CLI's implementation is now in TypeScript; and currently being evaluated for improved ergonomics. You must run a filewatcher with compile step during development.
+
+`cd lighthouse-cli && npm run dev`
+
 #### Run
+
 ```sh
 node lighthouse-cli http://example.com
 ```
+
+Geting started tip: `node --inspect --debug-brk lighthouse-cli http://example.com` to open up Chrome DevTools and step
+through the entire app. See [Debugging Node.js with Chrome
+DevTools](https://medium.com/@paul_irish/debugging-node-js-nightlies-with-chrome-devtools-7c4a1b95ae27#.59rma3ukm)
+for more info.
 
 ## Custom run configuration
 
@@ -189,7 +204,7 @@ _Some incomplete notes_
 
 ### Protocol
 
-* _Interacting with Chrome:_ The Chrome protocol connection maintained via  [chrome-remote-interface](https://github.com/cyrus-and/chrome-remote-interface) for the CLI and [`chrome.debuggger` API](https://developer.chrome.com/extensions/debugger) when in the Chrome extension.
+* _Interacting with Chrome:_ The Chrome protocol connection maintained via [WebSocket](https://github.com/websockets/ws) for the CLI [`chrome.debuggger` API](https://developer.chrome.com/extensions/debugger) when in the Chrome extension.
 * _Event binding & domains_: Some domains must be `enable()`d so they issue events. Once enabled, they flush any events that represent state. As such, network events will only issue after the domain is enabled. All the protocol agents resolve their `Domain.enable()` callback _after_ they have flushed any pending events. See example:
 
 ```js

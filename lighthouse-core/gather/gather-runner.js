@@ -45,9 +45,8 @@ const path = require('path');
  *     ii. all gatherer's afterPass()
  *
  * 3. Teardown
- *   A. reloadForCleanStateIfNeeded
- *   B. driver.disconnect()
- *   C. collect all artifacts and return them
+ *   A. driver.disconnect()
+ *   B. collect all artifacts and return them
  */
 class GatherRunner {
   /**
@@ -87,12 +86,9 @@ class GatherRunner {
     log.log('status', 'Initializing…');
     // Enable emulation based on flags
     return driver.beginEmulation(options.flags)
-      .then(_ => {
-        return driver.cleanAndDisableBrowserCaches();
-      }).then(_ => {
-        // Clears storage for origin.
-        return driver.clearDataForOrigin(options.url);
-      });
+      .then(_ => driver.enableRuntimeEvents())
+      .then(_ => driver.cleanAndDisableBrowserCaches())
+      .then(_ => driver.clearDataForOrigin(options.url));
   }
 
   /**
@@ -240,14 +236,9 @@ class GatherRunner {
         });
       })
       .then(_ => {
-        // We dont need to hold up the reporting for the reload/disconnect,
-        // so we will not return a promise in here.
-        driver.reloadForCleanStateIfNeeded(options).then(_ => {
-          log.log('status', 'Disconnecting from browser...');
-          driver.disconnect();
-        });
-      })
-      .then(_ => {
+        log.log('status', 'Disconnecting from browser...');
+        return driver.disconnect();
+      }).then(_ => {
         // Collate all the gatherer results.
         const computedArtifacts = this.instantiateComputedArtifacts();
         const artifacts = Object.assign({}, computedArtifacts, tracingData);
@@ -314,7 +305,7 @@ class GatherRunner {
   }
 
   static instantiateComputedArtifacts() {
-    let computedArtifacts = {};
+    const computedArtifacts = {};
     require('fs').readdirSync(path.join(__dirname, 'computed')).forEach(function(file) {
       // Drop `.js` suffix to keep browserify import happy.
       file = file.replace(/\.js$/, '');

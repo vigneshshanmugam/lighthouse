@@ -17,14 +17,16 @@
 
 'use strict';
 
-const Driver = require('../../../gather/drivers/cri.js');
+const Driver = require('../../../gather/drivers/driver.js');
+const Connection = require('../../../gather/drivers/connection.js');
 const Element = require('../../../lib/element.js');
 const NetworkRecorder = require('../../../lib/network-recorder');
 const assert = require('assert');
 
-let driverStub = new Driver();
+const connection = new Connection();
+const driverStub = new Driver(connection);
 
-driverStub.sendCommand = function(command, params) {
+connection.sendCommand = function(command, params) {
   switch (command) {
     case 'DOM.getDocument':
       return Promise.resolve({root: {nodeId: 249}});
@@ -67,7 +69,7 @@ describe('Browser Driver', () => {
 
   it('will update the options.url through redirects', () => {
     const networkRecorder = driverStub._networkRecorder = new NetworkRecorder([]);
-    let opts = {url: req1.url};
+    const opts = {url: req1.url};
     driverStub.enableUrlUpdateIfRedirected(opts);
 
     // Fake some reqFinished events

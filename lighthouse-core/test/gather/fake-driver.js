@@ -26,16 +26,14 @@ module.exports = {
   gotoURL() {
     return Promise.resolve();
   },
-
   beginEmulation() {
     return Promise.resolve();
   },
-
-  cleanAndDisableBrowserCaches() {},
-  clearDataForOrigin() {},
-  reloadForCleanStateIfNeeded() {
+  enableRuntimeEvents() {
     return Promise.resolve();
   },
+  cleanAndDisableBrowserCaches() {},
+  clearDataForOrigin() {},
   beginTrace() {
     return Promise.resolve();
   },

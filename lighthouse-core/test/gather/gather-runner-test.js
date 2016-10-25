@@ -48,11 +48,16 @@ class TestGathererNoArtifact {
 const fakeDriver = require('./fake-driver');
 
 function getMockedEmulationDriver(emulationFn, netThrottleFn, cpuThrottleFn) {
-  const Driver = require('../../gather/drivers/cri');
-  const EmulationMock = class extends Driver {
-    beginEmulation(flags) {
-      return super.beginEmulation(flags);
+  const Driver = require('../../gather/drivers/driver');
+  const Connection = require('../../gather/drivers/connection');
+  const EmulationDriver = class extends Driver {
+    enableRuntimeEvents() {
+      return Promise.resolve();
     }
+    cleanAndDisableBrowserCaches() {}
+    clearDataForOrigin() {}
+  };
+  const EmulationMock = class extends Connection {
     sendCommand(command) {
       let fn = null;
       switch (command) {
@@ -71,10 +76,8 @@ function getMockedEmulationDriver(emulationFn, netThrottleFn, cpuThrottleFn) {
       }
       return Promise.resolve(fn && fn());
     }
-    cleanAndDisableBrowserCaches() {}
-    clearDataForOrigin() {}
   };
-  return new EmulationMock();
+  return new EmulationDriver(new EmulationMock());
 }
 
 describe('GatherRunner', function() {
@@ -108,12 +111,12 @@ describe('GatherRunner', function() {
   });
 
   it('sets up the driver to begin emulation when all emulation flags are undefined', () => {
-    let tests = {
+    const tests = {
       calledDeviceEmulation: false,
       calledNetworkEmulation: false,
       calledCpuEmulation: false,
     };
-    let createEmulationCheck = variable => () => {
+    const createEmulationCheck = variable => () => {
       tests[variable] = true;
 
       return true;
@@ -135,14 +138,13 @@ describe('GatherRunner', function() {
 
   it(`sets up the driver to stop device emulation when
   disableDeviceEmulation flag is true`, () => {
-    let tests = {
+    const tests = {
       calledDeviceEmulation: false,
       calledNetworkEmulation: false,
       calledCpuEmulation: false,
     };
-    let createEmulationCheck = variable => () => {
+    const createEmulationCheck = variable => () => {
       tests[variable] = true;
-
       return true;
     };
     const driver = getMockedEmulationDriver(
@@ -164,14 +166,13 @@ describe('GatherRunner', function() {
 
   it(`sets up the driver to stop network throttling when
   disableNetworkThrottling flag is true`, () => {
-    let tests = {
+    const tests = {
       calledDeviceEmulation: false,
       calledNetworkEmulation: false,
       calledCpuEmulation: false,
     };
-    let createEmulationCheck = variable => () => {
+    const createEmulationCheck = variable => () => {
       tests[variable] = true;
-
       return true;
     };
     const driver = getMockedEmulationDriver(
@@ -193,14 +194,13 @@ describe('GatherRunner', function() {
 
   it(`sets up the driver to stop cpu throttling when
   disableCpuThrottling flag is true`, () => {
-    let tests = {
+    const tests = {
       calledDeviceEmulation: false,
       calledNetworkEmulation: false,
       calledCpuEmulation: false,
     };
-    let createEmulationCheck = variable => () => {
+    const createEmulationCheck = variable => () => {
       tests[variable] = true;
-
       return true;
     };
     const driver = getMockedEmulationDriver(
@@ -434,7 +434,7 @@ describe('GatherRunner', function() {
   it('loads a gatherer from node_modules/', () => {
     return assert.throws(_ => GatherRunner.getGathererClass(
         // Use a lighthouse dep as a stand in for a module.
-        'chrome-remote-interface'
+        'mocha'
     ), function(err) {
       // Should throw a gatherer validation error, but *not* a gatherer not found error.
       return !/locate gatherer/.test(err) && /beforePass\(\) method/.test(err);
